@@ -1,47 +1,95 @@
 package weather.station;
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import weather.station.utils.ObjectMapperUtils;
 
-import java.util.Collection;
+import java.time.LocalDate;
+import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/sensors")
 public class SensorController {
 
-    private final SensorServiceImpl sensorServiceImpl;
+    @Autowired
+    private SensorService sensorService;
 
-    public SensorController(SensorServiceImpl sensorServiceImpl) {
-        this.sensorServiceImpl = sensorServiceImpl;
+    @GetMapping(value = "/")
+    public List<SensorDTO> getAllSensors() {
+        return ObjectMapperUtils.mapAll(sensorService.findAll(), SensorDTO.class);
     }
 
-    // REST endpoints for sensor operations
+    @GetMapping(value = "/{sensorId}")
+    public SensorDTO getSensorById(@PathVariable("sensorId") String sensorId) {
+        return ObjectMapperUtils.map(sensorService.findBySensorId(sensorId), SensorDTO.class);
+    }
 
-    @GetMapping
-    Collection<Docum>
-
-//
-//    @PostMapping
-//    public ResponseEntity<String> registerSensor(@RequestBody Sensor sensor) {
-//        Sensor registeredSensor = sensorServiceImpl.registerSensor(sensor);
-//        return ResponseEntity.ok(registeredSensor);
+//    @GetMapping(value = "/byCountryAndCity/{countryName}/{cityName}")
+//    public SensorDTO getSensorByCountryAndCity(
+//            @PathVariable("countryName") String countryName,
+//            @PathVariable("cityName") String cityName) {
+//        return ObjectMapperUtils.map(sensorService.findByCountryNameAndCityName(countryName, cityName), SensorDTO.class);
 //    }
 
+    @PostMapping(value = "/register")
+    public ResponseEntity<String> registerSensor(@RequestBody SensorDTO sensorDTO) {
+        Sensor sensor = ObjectMapperUtils.map(sensorDTO, Sensor.class);
 
-//
-//    @PostMapping("/{sensorId}/metrics")
-//    public ResponseEntity<String> addMetricToSensor(@PathVariable String sensorId, @RequestBody MetricRequest metricRequest) {
-//        // Implement logic to add metric to sensor
-//    }
-//
-//    @GetMapping("/{sensorId}")
-//    public ResponseEntity<Sensor> getSensorById(@PathVariable String sensorId) {
-//        // Implement logic to retrieve sensor by ID
-//    }
-//
-//    @GetMapping("/{sensorId}/data")
-//    public ResponseEntity<SensorData> querySensorData(@PathVariable String sensorId, @RequestParam(required = false) String metric, @RequestParam(required = false) String startDate, @RequestParam(required = false) String endDate) {
-//        // Implement logic to query sensor data
-//    }
+        // Perform registration logic in the service layer
+        sensorService.registerSensor(sensor);
+
+        // You can customize the response as needed
+        return new ResponseEntity<>("Sensor registered successfully" + sensor.toString(), HttpStatus.CREATED);
+    }
+
+    @DeleteMapping(value = "/delete/{sensorId}")
+    public ResponseEntity<?> deleteSensorById(@PathVariable("sensorId") String sensorId) {
+        sensorService.deleteSensorById(sensorId);
+        return new ResponseEntity<>("Sensor deleted successfully", HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/{sensorId}/metrics/{metricName}")
+    public ResponseEntity<String> addMetricToSensor(
+            @PathVariable("sensorId") String sensorId,
+            @PathVariable("metricName") String metricName) {
+        sensorService.addMetricToSensor(sensorId, metricName);
+        return new ResponseEntity<>("Metric added to sensor successfully", HttpStatus.OK);
+    }
+
+    @PostMapping(value = "/{sensorId}/metrics/{metricName}/values")
+    public ResponseEntity<String> addValuesToSensorMetric(
+            @PathVariable("sensorId") String sensorId,
+            @PathVariable("metricName") String metricName,
+            @RequestBody Map<String, Object> requestBody) {
+
+        LocalDate date = LocalDate.parse((CharSequence) requestBody.get("date"));
+        Double value = (Double) requestBody.get("value");
+
+        sensorService.addValuesToSensorMetric(sensorId, metricName, date, value);
+        return new ResponseEntity<>("Values added to sensor metric successfully", HttpStatus.OK);
+    }
+
+    @GetMapping(value = "/{sensorId}/metrics/{metricName}/values")
+    public String getSingularMetricValue(@PathVariable("sensorId") String sensorId,
+                                             @PathVariable("metricName") String metricName,
+                                             @RequestBody Map<String, Object> requestBody) {
+
+        LocalDate startDate = LocalDate.parse((CharSequence) requestBody.get("startDate"));
+        LocalDate endDate = LocalDate.parse((CharSequence) requestBody.get("startDate"));
+        return  sensorService.getMetricValue(sensorId, metricName, startDate, endDate);
+    }
+
+    @GetMapping(value = "/metrics/values")
+    public List<String> getSensorsMetricValues(@RequestBody Map<String, Object> requestBody) {
+        List<String> sensorIds = (List<String>) requestBody.get("sensorIds");
+        List<String> metrics = (List<String>) requestBody.get("metrics");
+        LocalDate startDate = LocalDate.parse((CharSequence) requestBody.get("startDate"));
+        LocalDate endDate = LocalDate.parse((CharSequence) requestBody.get("endDate"));
+
+        return sensorService.getMetricValues(sensorIds, metrics, startDate, endDate);
+    }
+
 }

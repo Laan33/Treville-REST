@@ -1,26 +1,41 @@
-package weather.station;
+    package weather.station;
 
-import java.util.Map;
+    import java.time.LocalDate;
+    import java.util.HashMap;
+    import java.util.Map;
 
-class Metric {
-    private Map<String, Double> values; // Timestamp -> Value
+    public class Metric {
+        private Map<LocalDate, Double> values; // Timestamp -> Value
 
-    Metric() {
+        Metric() {
+            values = new HashMap<>();
+        }
+
+        public Metric(Map<LocalDate, Double> values) {
+            this.values = values;
+        }
+
+        public Map<LocalDate, Double> getValues() {
+            return values;
+        }
+
+        public void setValues(Map<LocalDate, Double> values) {
+            this.values = values;
+        }
+
+        public void addValue(LocalDate date, Double value) {
+            values.put(date, value);
+        }
+
+        public double getAverage() {
+            if (values.isEmpty()) {
+                return 0.0; // Return 0 if the map is empty to avoid division by zero
+            }
+
+            double sum = 0.0;
+            for (Double value : values.values()) {
+                sum += value;
+            }
+            return sum;
+        }
     }
-
-    public Metric(Map<String, Double> values) {
-        this.values = values;
-    }
-
-    public Map<String, Double> getValues() {
-        return values;
-    }
-
-    public void setValues(Map<String, Double> values) {
-        this.values = values;
-    }
-
-    public void addValue(String timeStamp, Double value) {
-        values.put(timeStamp, value);
-    }
-}

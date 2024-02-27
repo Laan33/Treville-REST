@@ -1,16 +1,18 @@
 package weather.station;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
-import org.springframework.data.repository.query.Param;
-import org.springframework.data.rest.core.annotation.RepositoryRestResource;
+import org.springframework.data.mongodb.repository.Query;
 
+import java.util.Date;
 import java.util.List;
 
-@RepositoryRestResource(collectionResourceRel = "sensors", path = "sensors")
 public interface SensorRepository extends MongoRepository<Sensor, String> {
 
 //    List<Sensor> findByCityName(@Param("cityName") String cityName);
-    List<Metric> querySensorMetrics()
+@Query("{'_id': ?0, 'metrics.name': { $in: ?1 }, 'metrics.date': { $gte: ?2, $lte: ?3 }}")
+List<Metric> getMetrics(String sensorId, List<String> metrics, Date startDate, Date endDate);
+//    List<Sensor> findByCityNameAndCountryName(String countryName, String cityName);
+
 
 
 //    void addSensorMetric(@Param());

@@ -2,7 +2,9 @@ package weather.station;
 
 import org.springframework.stereotype.Service;
 
-import java.util.Map;
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -15,45 +17,89 @@ public class SensorServiceImpl implements SensorService {
         this.sensorRepository = sensorRepository;
     }
 
-    public Sensor registerSensor(Sensor sensor) {
-        return sensor;
+    @Override
+    public List<Sensor> findAll() {
+        return sensorRepository.findAll();
     }
 
-    public void updateSensorMetrics(String sensorId, Map<String, Double> metrics) {
-
+    @Override
+    public Optional<Sensor> findBySensorId(String sensorId) {
+        return sensorRepository.findById(sensorId);
     }
 
-//    public void addMetricToSensor(String sensorId, String metricName, String timestamp, Double value) {
-//        Optional<Sensor> optionalSensor = sensorRepository.findById(sensorId);
-//        if (optionalSensor.isPresent()) {
-//            Sensor sensor = optionalSensor.get();
-//            Map<String, Map<String, Double>> metrics = sensor.getMetrics();
-//            // Update metrics map with new metric data
-//            // Assuming metrics is already initialized
-//            metrics.computeIfAbsent(metricName, k -> new HashMap<>()).put(timestamp, value);
-//            sensor.setMetrics(metrics);
-//            sensorRepository.save(sensor);
-//        } else {
-//            // Handle case when sensor is not found
-//            // You can throw an exception or handle it based on your requirements
-//        }
+//    @Override
+//    public List<Sensor> findByCountryNameAndCityName(String cityName, String countryName) {
+//        return sensorRepository.findByCityNameAndCountryName(countryName, cityName);
 //    }
 
-    public void addMetricToSensor(String sensorId, String metricName) {
-        Optional<Sensor> optionalSensor = sensorRepository.findById(sensorId);
-        if (optionalSensor.isPresent()) {
-            Sensor sensor = optionalSensor.get();
-
-            Map<String, Metric> metricMap = sensor.getMetrics();
-
-            metricMap.put(metricName, new Metric());
-            sensorRepository.save(sensor);
-
-        } else {
-            // Handle case when sensor is not found
-        }
+    @Override
+    public Sensor registerSensor(Sensor sensor) {
+        return sensorRepository.save(sensor);
     }
 
+    @Override
+    public void addMetricToSensor(String sensorId, String metricName) {
+        sensorRepository.findById(sensorId).ifPresent(sensor -> {
+            sensor.addMetric(metricName);
+            sensorRepository.save(sensor);
+        });
+    }
 
+    @Override
+    public void addValuesToSensorMetric(String sensorId, String metricName, LocalDate date, Double value) {
+        sensorRepository.findById(sensorId).ifPresent(sensor -> {
+            sensor.addValueToMetric(metricName, date, value);
+            sensorRepository.save(sensor);
+        });
+    }
+
+    @Override
+    public void deleteSensorById(String sensorId) {
+        sensorRepository.deleteById(sensorId);
+    }
+
+    @Override
+    public String getMetricValue(String sensorId, String metric, LocalDate startDate, LocalDate endDate) {
+        Optional<Sensor> sensorOptional = sensorRepository.findById(sensorId);
+        if (sensorOptional.isPresent()) {
+            Sensor sensor = sensorOptional.get();
+            Metric sensorMetric = sensor.getMetric(metric);
+            if (sensorMetric != null) {
+                return String.format(
+                        "City: %s, SensorID: %s, Metric: %s, Average value: %10.2f",
+                        sensor.getCityName(),
+                        sensorId,
+                        metric,
+                        sensorMetric.getAverage());
+            }
+
+        }
+        return "Metric does not exist";
+    }
+
+    @Override
+    public List<String> getMetricValues(List<String> sensorIds, List<String> metrics, LocalDate startDate, LocalDate endDate) {
+        List<String> reportList = new ArrayList<>();
+
+        for (String sensorId : sensorIds) {
+            for (String metric : metrics) {
+                Optional<Sensor> sensorOptional = sensorRepository.findById(sensorId);
+                if (sensorOptional.isPresent()) {
+                    Sensor sensor = sensorOptional.get();
+                    Metric sensorMetric = sensor.getMetric(metric, startDate, endDate);
+
+                    if (sensorMetric != null) {
+                        reportList.add(String.format(
+                                "City: %s, SensorID: %s, Metric: %s, Average value: %10.2f",
+                                sensor.getCityName(),
+                                sensorId,
+                                metric,
+                                sensorMetric.getAverage()));
+                    }
+                }
+            }
+        }
+        return reportList;
+    }
 }
 

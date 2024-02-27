@@ -3,6 +3,7 @@ package weather.station;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
+import java.time.LocalDate;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -61,6 +62,31 @@ public class Sensor {
 
     public void addMetric(String metricName) {
         metrics.put(metricName, new Metric());
+    }
+
+    public Metric getMetric(String metricName) {
+        return metrics.get(metricName);
+    }
+
+    public Metric getMetric(String metricName, LocalDate startDate, LocalDate endDate) {
+        Metric metric = metrics.get(metricName);
+        if (metric == null) {
+            return null; // or handle the case where the metric is not found
+        }
+
+        Map<LocalDate, Double> filteredValues = new HashMap<>();
+        for (Map.Entry<LocalDate, Double> entry : metric.getValues().entrySet()) {
+            LocalDate date = entry.getKey();
+            if (!date.isBefore(startDate) && !date.isAfter(endDate)) {
+                filteredValues.put(date, entry.getValue());
+            }
+        }
+
+        return new Metric(filteredValues);
+    }
+
+    public void addValueToMetric(String metricName, LocalDate date, Double value) {
+        metrics.get(metricName).addValue(date, value);
     }
 
 }
