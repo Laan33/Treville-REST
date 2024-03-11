@@ -1,9 +1,12 @@
-package weather.station;
+package weather.station.controller;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import weather.station.dao.SensorDTO;
+import weather.station.service.SensorService;
+import weather.station.contracts.Sensor;
 import weather.station.utils.ObjectMapperUtils;
 
 import java.time.LocalDate;
@@ -34,7 +37,7 @@ public class SensorController {
 //        return ObjectMapperUtils.map(sensorService.findByCountryNameAndCityName(countryName, cityName), SensorDTO.class);
 //    }
 
-    @PostMapping(value = "/register")
+    @PostMapping(value = "/{sensorId}")
     public ResponseEntity<String> registerSensor(@RequestBody SensorDTO sensorDTO) {
         Sensor sensor = ObjectMapperUtils.map(sensorDTO, Sensor.class);
 
@@ -45,13 +48,13 @@ public class SensorController {
         return new ResponseEntity<>("Sensor registered successfully" + sensor.toString(), HttpStatus.CREATED);
     }
 
-    @DeleteMapping(value = "/delete/{sensorId}")
+    @DeleteMapping(value = "/{sensorId}")
     public ResponseEntity<?> deleteSensorById(@PathVariable("sensorId") String sensorId) {
         sensorService.deleteSensorById(sensorId);
         return new ResponseEntity<>("Sensor deleted successfully", HttpStatus.OK);
     }
 
-    @PostMapping(value = "/{sensorId}/metrics/{metricName}")
+    @PostMapping(value = "/{sensorId}/metric/{metricName}")
     public ResponseEntity<String> addMetricToSensor(
             @PathVariable("sensorId") String sensorId,
             @PathVariable("metricName") String metricName) {
@@ -59,7 +62,7 @@ public class SensorController {
         return new ResponseEntity<>("Metric added to sensor successfully", HttpStatus.OK);
     }
 
-    @PostMapping(value = "/{sensorId}/metrics/{metricName}/values")
+    @PostMapping(value = "/{sensorId}/metric/{metricName}/values")
     public ResponseEntity<String> addValuesToSensorMetric(
             @PathVariable("sensorId") String sensorId,
             @PathVariable("metricName") String metricName,
@@ -72,7 +75,7 @@ public class SensorController {
         return new ResponseEntity<>("Values added to sensor metric successfully", HttpStatus.OK);
     }
 
-    @GetMapping(value = "/{sensorId}/metrics/{metricName}/values")
+    @GetMapping(value = "/{sensorId}/metric/{metricName}/values")
     public String getSingularMetricValue(@PathVariable("sensorId") String sensorId,
                                              @PathVariable("metricName") String metricName,
                                              @RequestBody Map<String, Object> requestBody) {
@@ -82,7 +85,7 @@ public class SensorController {
         return  sensorService.getMetricValue(sensorId, metricName, startDate, endDate);
     }
 
-    @GetMapping(value = "/metrics/values")
+    @GetMapping(value = "/metric/values")
     public List<String> getSensorsMetricValues(@RequestBody Map<String, Object> requestBody) {
         List<String> sensorIds = (List<String>) requestBody.get("sensorIds");
         List<String> metrics = (List<String>) requestBody.get("metrics");

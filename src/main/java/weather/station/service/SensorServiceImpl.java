@@ -1,6 +1,9 @@
-package weather.station;
+package weather.station.service;
 
 import org.springframework.stereotype.Service;
+import weather.station.dao.SensorRepository;
+import weather.station.contracts.Metric;
+import weather.station.contracts.Sensor;
 
 import java.time.LocalDate;
 import java.util.ArrayList;

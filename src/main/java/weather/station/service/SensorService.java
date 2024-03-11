@@ -1,4 +1,6 @@
-package weather.station;
+package weather.station.service;
+
+import weather.station.contracts.Sensor;
 
 import java.time.LocalDate;
 import java.util.List;

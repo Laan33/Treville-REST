@@ -1,7 +1,8 @@
-package weather.station;
+package weather.station.contracts;
 
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
+import weather.station.contracts.Metric;
 
 import java.time.LocalDate;
 import java.util.HashMap;

@@ -1,4 +1,4 @@
-    package weather.station;
+    package weather.station.contracts;
 
     import java.time.LocalDate;
     import java.util.HashMap;
@@ -7,7 +7,7 @@
     public class Metric {
         private Map<LocalDate, Double> values; // Timestamp -> Value
 
-        Metric() {
+        public Metric() {
             values = new HashMap<>();
         }
 
