@@ -1,7 +1,9 @@
-package weather.station;
+package weather.station.dao;
 
 import org.springframework.data.mongodb.repository.MongoRepository;
 import org.springframework.data.mongodb.repository.Query;
+import weather.station.contracts.Metric;
+import weather.station.contracts.Sensor;
 
 import java.util.Date;
 import java.util.List;

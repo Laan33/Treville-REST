@@ -1,4 +1,6 @@
-package weather.station;
+package weather.station.dao;
+
+import weather.station.contracts.Metric;
 
 import java.util.HashMap;
 import java.util.Map;
